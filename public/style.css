@@ -1,0 +1,53 @@
+/* Extremely Simple & Minimal CSS - Almost No Styling */
+body {
+  font-family: sans-serif;
+  margin: 20px;
+  line-height: 1.4;
+  background: #ffffff;
+  color: #000000;
+}
+
+h1, h2, h3, h4 { margin-top: 10px; margin-bottom: 10px; }
+
+header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+
+nav button {
+  padding: 6px 12px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+
+nav button.active {
+  font-weight: bold;
+  background-color: #ddd;
+}
+
+.card {
+  border: 1px solid #777;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+.hidden { display: none !important; }
+
+/* Seat Grid - Simple Plain Buttons */
+.seat-row { margin-bottom: 5px; }
+.row-label { display: inline-block; width: 140px; font-weight: bold; }
+.seat-btn {
+  width: 40px;
+  height: 30px;
+  margin: 2px;
+  cursor: pointer;
+}
+.seat-btn.status-available { background: #fff; border: 1px solid #000; }
+.seat-btn.status-selected { background: #000; color: #fff; }
+.seat-btn.status-my-hold { background: orange; color: #000; }
+.seat-btn.status-other-hold { background: #ccc; cursor: not-allowed; }
+.seat-btn.status-booked { background: red; color: #fff; cursor: not-allowed; }
+
+/* Simple Tables */
+table, th, td { border: 1px solid #000; border-collapse: collapse; padding: 6px; }
+
+.alert { padding: 8px; border: 1px solid #000; margin-bottom: 10px; background: #eee; }
+.qr-code-img { width: 120px; height: 120px; display: block; margin: 10px 0; border: 1px solid #000; }

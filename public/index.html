@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Booking System - Simple & Fast</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Header & Role Selector -->
+  <header>
+    <div class="header-content">
+      <h1>🎟️ Ticket Booking System</h1>
+      <div class="user-role-bar">
+        <label for="userEmailInput">User Email:</label>
+        <input type="email" id="userEmailInput" value="customer@example.com">
+        <label for="userRoleSelect">Role:</label>
+        <select id="userRoleSelect">
+          <option value="Customer">Customer</option>
+          <option value="Organiser">Organiser</option>
+          <option value="Admin">Admin</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-btn active" data-tab="tab-events">🎬 Browse & Book Seats</button>
+      <button class="nav-btn" data-tab="tab-my-bookings">🎫 My Bookings & QR Tickets</button>
+      <button class="nav-btn organiser-only" data-tab="tab-organiser">📊 Organiser Dashboard</button>
+      <button class="nav-btn admin-only" data-tab="tab-admin">⚙️ Admin & Venues</button>
+      <button class="nav-btn email-inbox-btn" id="openInboxBtn">📬 Email Inbox (<span id="emailCount">0</span>)</button>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- Notification Banner -->
+    <div id="alertBox" class="alert hidden"></div>
+
+    <!-- TAB 1: BROWSE EVENTS & SEAT MAP -->
+    <section id="tab-events" class="tab-content active">
+      <h2>Browse Events</h2>
+      <div class="event-selector-bar">
+        <label for="eventSelect">Select Event:</label>
+        <select id="eventSelect">
+          <option value="">Loading events...</option>
+        </select>
+        <button id="refreshSeatMapBtn">🔄 Refresh Seat Map</button>
+      </div>
+
+      <div id="eventDetailsCard" class="card hidden">
+        <h3 id="eventTitle">Event Title</h3>
+        <p><strong>Type:</strong> <span id="eventType">-</span> | <strong>Date:</strong> <span id="eventDate">-</span> <span id="eventTime">-</span></p>
+        <p><strong>Venue:</strong> <span id="eventVenue">-</span></p>
+        <div id="pricingBadgeList" class="pricing-badges"></div>
+      </div>
+
+      <!-- Seat Map Grid -->
+      <div class="card seat-map-card">
+        <div class="seat-map-header">
+          <h3>Visual Seat Map</h3>
+          <div class="legend">
+            <span class="legend-item"><span class="box seat-avail"></span> Available</span>
+            <span class="legend-item"><span class="box seat-held"></span> Held (My Hold)</span>
+            <span class="legend-item"><span class="box seat-other-held"></span> Held (Other)</span>
+            <span class="legend-item"><span class="box seat-booked"></span> Booked / Sold</span>
+          </div>
+        </div>
+
+        <div class="screen-indicator">📺 SCREEN / STAGE THIS WAY</div>
+
+        <div id="seatGridContainer" class="seat-grid-container">
+          <p class="text-muted">Select an event above to display the interactive seat map.</p>
+        </div>
+
+        <!-- Seat Hold Checkout Panel -->
+        <div id="checkoutPanel" class="checkout-panel hidden">
+          <div class="hold-timer-box">
+            ⏰ <strong>Hold Time Remaining:</strong> <span id="holdTimer">10:00</span>
+            <span class="text-small">(Seats release automatically on timer expiry or abandonment)</span>
+          </div>
+          <div class="checkout-details">
+            <p><strong>Selected Seats:</strong> <span id="selectedSeatsText">None</span></p>
+            <p><strong>Total Price:</strong> <span id="totalPriceText">$0</span></p>
+            <div class="checkout-actions">
+              <button id="confirmBookingBtn" class="btn btn-primary">✅ Confirm Booking & Get QR Ticket</button>
+              <button id="releaseHoldBtn" class="btn btn-secondary">❌ Release Seats (Abandon Checkout)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Waitlist Box when Sold Out or Category Full -->
+        <div id="waitlistBox" class="waitlist-box card hidden">
+          <h3>⚡ Sold Out / Waitlist Request</h3>
+          <p>Seats in your desired category may be full. Join the waitlist to get auto-assigned when a cancellation occurs!</p>
+          <div class="form-group inline-form">
+            <label for="waitlistCategorySelect">Category:</label>
+            <select id="waitlistCategorySelect"></select>
+            <button id="joinWaitlistBtn" class="btn btn-warning">➕ Join Waitlist</button>
+          </div>
+          <p id="waitlistStatusText" class="text-muted"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: MY BOOKINGS & QR TICKETS -->
+    <section id="tab-my-bookings" class="tab-content">
+      <h2>My Confirmed Bookings & Waitlist Offers</h2>
+
+      <!-- Active Waitlist Offers (Time Limited) -->
+      <div id="waitlistOffersContainer"></div>
+
+      <!-- Active Holds List -->
+      <div id="activeHoldsContainer"></div>
+
+      <h3>Confirmed Tickets</h3>
+      <div id="bookingsList" class="bookings-grid">
+        <p class="text-muted">No confirmed bookings found for your email address.</p>
+      </div>
+    </section>
+
+    <!-- TAB 3: ORGANISER DASHBOARD -->
+    <section id="tab-organiser" class="tab-content">
+      <h2>Organiser Dashboard & Revenue Summary</h2>
+      
+      <!-- Create Event Form -->
+      <div class="card">
+        <h3>Create New Movie or Concert Listing</h3>
+        <form id="createEventForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Event Title:</label>
+              <input type="text" id="newEventTitle" required placeholder="e.g. Avatar 3">
+            </div>
+            <div class="form-group">
+              <label>Type:</label>
+              <select id="newEventType">
+                <option value="Movie">Movie</option>
+                <option value="Concert">Concert</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Venue:</label>
+              <select id="newEventVenue"></select>
+            </div>
+            <div class="form-group">
+              <label>Date:</label>
+              <input type="date" id="newEventDate" required>
+            </div>
+            <div class="form-group">
+              <label>Time:</label>
+              <input type="time" id="newEventTime" value="19:00" required>
+            </div>
+          </div>
+
+          <h4>Category Pricing ($)</h4>
+          <div id="categoryPricingInputs" class="form-grid">
+            <div class="form-group">
+              <label>VIP / Premium Price ($):</label>
+              <input type="number" id="pricePremium" value="50" min="1">
+            </div>
+            <div class="form-group">
+              <label>Standard Price ($):</label>
+              <input type="number" id="priceStandard" value="25" min="1">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">➕ Create Listing</button>
+        </form>
+      </div>
+
+      <!-- Revenue Table -->
+      <div class="card">
+        <h3>Event Revenue & Occupancy Report</h3>
+        <table class="table" id="organiserTable">
+          <thead>
+            <tr>
+              <th>Event Title</th>
+              <th>Date</th>
+              <th>Total Seats</th>
+              <th>Booked</th>
+              <th>Held</th>
+              <th>Available</th>
+              <th>Waitlist</th>
+              <th>Total Revenue ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="8">Loading data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 4: ADMIN & VENUES -->
+    <section id="tab-admin" class="tab-content">
+      <h2>Admin Venue Setup & System Settings</h2>
+
+      <!-- TTL Config Settings -->
+      <div class="card">
+        <h3>Hold & Waitlist Offer TTL Configurator</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Seat Hold TTL (Seconds):</label>
+            <input type="number" id="cfgHoldTTL" value="600">
+            <small>Default 600s (10 minutes)</small>
+          </div>
+          <div class="form-group">
+            <label>Waitlist Offer TTL (Seconds):</label>
+            <input type="number" id="cfgOfferTTL" value="120">
+            <small>Default 120s (2 minutes)</small>
+          </div>
+        </div>
+        <button id="saveConfigBtn" class="btn btn-secondary">💾 Save Settings</button>
+        <button id="quickTestTTLBtn" class="btn btn-warning">⚡ Set Quick Test Mode (30s Hold / 15s Offer)</button>
+      </div>
+
+      <!-- Create Venue Form -->
+      <div class="card">
+        <h3>Create Venue</h3>
+        <form id="createVenueForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Venue Name:</label>
+              <input type="text" id="newVenueName" required placeholder="e.g. Cinema Hall B">
+            </div>
+            <div class="form-group">
+              <label>Rows Count:</label>
+              <input type="number" id="newVenueRows" value="5" min="1" max="10">
+            </div>
+            <div class="form-group">
+              <label>Cols Count:</label>
+              <input type="number" id="newVenueCols" value="6" min="1" max="12">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">➕ Create Venue</button>
+        </form>
+      </div>
+
+      <!-- Existing Venues List -->
+      <div class="card">
+        <h3>Existing Venues</h3>
+        <ul id="venuesList"></ul>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- EMAIL INBOX MODAL -->
+  <div id="inboxModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📬 Simulated Email Inbox</h3>
+        <button id="closeInboxBtn" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted">Emails sent by the system (Ticket confirmations, QR codes, waitlist seat availability links) are logged here:</p>
+        <div id="emailMessagesList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
